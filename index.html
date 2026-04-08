@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>System Ledger</title>
+    <title>CONTAS</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,6 +11,7 @@
     <meta name="theme-color" content="#00a859">
     
     <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22System%20Ledger%22%2C%22short_name%22%3A%22Ledger%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%2300a859%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F2933%2F2933116.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,9 +56,9 @@
 
     <div class="panel">
         <div class="grid-inputs">
-            <input type="text" id="name" placeholder="Nome da Conta (ex: Consórcio)">
-            <input type="number" id="value" placeholder="Valor Parcela (R$)">
-            <input type="number" id="totalParc" placeholder="Total Parcelas">
+            <input type="text" id="name" placeholder="Nome da Conta (ex: Aluguel)">
+            <input type="number" id="value" placeholder="Valor (R$)">
+            <input type="number" id="totalParc" placeholder="Total Parcelas (Opcional)">
             <div class="color-picker-container">
                 <span>Cor de Identificação:</span>
                 <input type="color" id="accColor" value="#00a859">
@@ -93,19 +94,23 @@
         const total = document.getElementById('totalParc').value;
         const color = document.getElementById('accColor').value;
 
-        if (name && value && total) {
+        // Agora só exige Nome e Valor. O "Total" é opcional.
+        if (name && value) {
+            // Se "total" for vazio ou zero, definimos como "FIXO"
+            const isFixed = !total || parseInt(total) <= 0;
+
             db.active.push({
                 id: Date.now(),
                 name,
                 value: parseFloat(value),
-                remaining: parseInt(total),
-                total: parseInt(total),
+                remaining: isFixed ? 'FIXO' : parseInt(total),
+                total: isFixed ? 'FIXO' : parseInt(total),
                 color: color
             });
             document.querySelectorAll('input[type="text"], input[type="number"]').forEach(i => i.value = '');
             save();
         } else {
-            alert("Preencha o Nome, Valor e Parcelas, mestre!");
+            alert("Preencha pelo menos o Nome e o Valor, mestre!");
         }
     }
 
@@ -113,22 +118,33 @@
         const index = db.active.findIndex(a => a.id === id);
         const item = db.active[index];
 
-        if (item.remaining > 0) {
+        if (item.total === 'FIXO' || item.remaining > 0) {
+            
+            // Define o texto que vai para o histórico
+            const infoText = item.total === 'FIXO' ? 'Conta Mensal' : `Parcela ${item.total - item.remaining + 1}/${item.total}`;
+
             db.history.unshift({
                 historyId: Date.now() + Math.random(),
                 name: item.name,
                 value: item.value,
                 date: new Date().toLocaleString('pt-BR'),
-                info: `Parcela ${item.total - item.remaining + 1}/${item.total}`,
+                info: infoText,
                 color: item.color || '#00a859'
             });
 
-            item.remaining--;
+            // Se for parcela (não fixo), desconta a parcela
+            if (item.total !== 'FIXO') {
+                item.remaining--;
 
-            if (item.remaining === 0) {
-                alert(`Parabéns! Conta "${item.name}" foi totalmente quitada!`);
-                db.active.splice(index, 1);
+                if (item.remaining === 0) {
+                    alert(`Parabéns! Conta "${item.name}" foi totalmente quitada!`);
+                    db.active.splice(index, 1);
+                }
+            } else {
+                // Se for fixo, apenas avisa que registrou e mantém a conta ativa
+                alert(`Pagamento de "${item.name}" registrado no histórico!`);
             }
+            
             save();
         }
     }
@@ -154,17 +170,20 @@
         activeContainer.innerHTML = '';
         db.active.forEach(acc => {
             const accColor = acc.color || '#00a859';
+            // Verifica o que escrever na tag (se é fixo ou o número de parcelas)
+            const badgeText = acc.total === 'FIXO' ? 'Conta Fixa' : `${acc.remaining} rest.`;
+
             activeContainer.innerHTML += `
                 <div class="card" style="border-left-color: ${accColor};">
                     <div class="card-header">
                         <div>
                             <div class="card-title" style="color: ${accColor};">${acc.name}</div>
-                            <div class="card-details">Valor mensal: R$ ${acc.value.toFixed(2)}</div>
+                            <div class="card-details">Valor: R$ ${acc.value.toFixed(2)}</div>
                         </div>
-                        <div class="installment-badge" style="color: ${accColor}; border-color: ${accColor}40;">${acc.remaining} rest.</div>
+                        <div class="installment-badge" style="color: ${accColor}; border-color: ${accColor}40;">${badgeText}</div>
                     </div>
                     <div class="card-actions">
-                        <button class="btn-pay" onclick="payInstallment(${acc.id})">PAGAR PARCELA ATUAL</button>
+                        <button class="btn-pay" onclick="payInstallment(${acc.id})">PAGAR CONTA</button>
                         <button class="btn-del" onclick="deleteAccount(${acc.id})">X</button>
                     </div>
                 </div>

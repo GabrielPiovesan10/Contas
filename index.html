@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CONTAS</title>
+    <title>CONTAS - DECK</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,57 +11,46 @@
         body { background-color: var(--bg-color); color: var(--text); font-family: 'Poppins', sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; max-width: 100vw; overflow-x: hidden; }
         .container { width: 100%; max-width: 600px; }
         
-        h1 { color: var(--accent); text-align: center; font-size: 1.5rem; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; margin-top: 10px; }
+        /* Seletor de Perfil no Topo */
+        .profile-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; background: #eee; padding: 5px; border-radius: 50px; width: fit-content; margin-left: auto; margin-right: auto; }
+        .prof-btn { padding: 8px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.3s; color: #777; }
+        .prof-btn.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,168,89,0.3); }
+
+        h1 { color: var(--accent); text-align: center; font-size: 1.5rem; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
         .sub-header { text-align: center; color: #888; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
         
-        /* Painel de Resumo Total */
-        .total-panel { background: #000; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .total-panel span { font-size: 0.9rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        .total-panel { background: #000; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
         .total-panel h2 { font-size: 1.8rem; color: var(--accent); }
 
-        .panel { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .grid-inputs { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        input { width: 100%; background: #fff; border: 1px solid var(--input-border); padding: 15px; border-radius: 8px; color: var(--text); font-family: inherit; outline: none; font-size: 1rem; }
+        .panel { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #eee; }
+        .grid-inputs { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        input { width: 100%; background: #fff; border: 1px solid var(--input-border); padding: 15px; border-radius: 8px; font-family: inherit; font-size: 1rem; }
         
-        /* Bolinha de Cor */
         .color-picker-wrapper { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid var(--input-border); padding: 10px 15px; border-radius: 8px; }
-        .color-picker-box { position: relative; width: 45px; height: 45px; cursor: pointer; }
-        .color-preview { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #eee; transition: background-color 0.2s; }
-        input[type="color"]#accColor { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .color-picker-box { position: relative; width: 45px; height: 45px; }
+        .color-preview { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #eee; }
+        input[type="color"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-        button.btn-main { background: var(--accent); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; width: 100%; font-size: 1.1rem; }
+        button.btn-main { background: var(--accent); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: 700; text-transform: uppercase; width: 100%; font-size: 1.1rem; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { flex: 1; text-align: center; padding: 15px; background: #eee; color: #555; cursor: pointer; border-radius: 8px; font-size: 1rem; font-weight: bold; }
+        .tab { flex: 1; text-align: center; padding: 15px; background: #eee; color: #555; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .tab.active { background: var(--accent); color: #fff; }
         
-        /* Cards de Contas */
         .card { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; border-left: 6px solid var(--accent); }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px; }
-        .card-title { font-weight: 700; font-size: 1.2rem; line-height: 1.2; }
-        .installment-badge { background: #fff; border: 1px solid #eee; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .card-title { font-weight: 700; font-size: 1.2rem; }
         .card-actions { display: flex; gap: 10px; }
         .btn-pay { background: #fff; border: 1px solid var(--input-border); padding: 12px; border-radius: 8px; font-weight: 600; flex: 1; }
         .btn-del { background: none; color: var(--danger); border: 1px solid var(--danger); width: 60px; border-radius: 8px; font-weight: bold; }
         
-        /* Histórico Organizado */
-        .history-date-group { margin: 20px 0 10px; font-size: 0.9rem; font-weight: 700; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .history-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ddd; }
-        .history-info .tag { font-weight: 700; font-size: 0.75rem; display: block; }
-        .history-info .name { font-size: 1rem; font-weight: 500; }
-        .history-value { font-weight: 700; font-size: 1rem; text-align: right; }
-        .history-time { font-size: 0.7rem; color: #999; }
+        .history-date-group { margin: 20px 0 10px; font-size: 0.9rem; font-weight: 700; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #eee; }
+        .history-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; border-left: 4px solid #ddd; }
 
-        /* MODAL CUSTOMIZADO */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .modal-box { background: #fff; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; animation: popUp 0.3s ease; }
-        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-title { font-weight: 700; font-size: 1.3rem; margin-bottom: 10px; color: var(--text); }
-        .modal-text { color: var(--gray); margin-bottom: 20px; line-height: 1.4; }
-        .modal-btns { display: flex; gap: 10px; }
-        .btn-modal { flex: 1; padding: 15px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        .btn-confirm { background: var(--accent); color: #fff; }
-        .btn-cancel { background: #eee; color: #555; }
+        .modal-box { background: #fff; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-modal { flex: 1; padding: 15px; border-radius: 8px; border: none; font-weight: 700; }
 
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: flex; justify-content: center; align-items: center; z-index: 3000; font-weight: bold; color: var(--accent); }
         .hidden { display: none !important; }
@@ -69,25 +58,30 @@
 </head>
 <body>
 
-<div id="loader" class="loading-overlay">Sincronizando Banco de Dados...</div>
+<div id="loader" class="loading-overlay">Sincronizando Perfil...</div>
 
 <div id="modalOverlay" class="modal-overlay">
     <div class="modal-box">
-        <div id="modalTitle" class="modal-title">Aviso</div>
-        <div id="modalText" class="modal-text">Texto aqui...</div>
+        <div id="modalTitle" style="font-weight:700; font-size:1.2rem; margin-bottom:10px;">Aviso</div>
+        <div id="modalText" style="color:#666; margin-bottom:20px;">Texto...</div>
         <div class="modal-btns">
-            <button id="btnCancel" class="btn-modal btn-cancel" onclick="closeModal()">Cancelar</button>
-            <button id="btnConfirm" class="btn-modal btn-confirm">Confirmar</button>
+            <button id="btnCancel" class="btn-modal" style="background:#eee;" onclick="closeModal()">Cancelar</button>
+            <button id="btnConfirm" class="btn-modal" style="background:var(--accent); color:#fff;">Confirmar</button>
         </div>
     </div>
 </div>
 
 <div class="container">
-    <h1>CONTAS</h1>
+    <div class="profile-selector">
+        <button id="btnGabriel" class="prof-btn" onclick="setUser('Gabriel')">GABRIEL</button>
+        <button id="btnWelia" class="prof-btn" onclick="setUser('Welia')">WELIA</button>
+    </div>
+
+    <h1>CONTAS - DECK</h1>
     <p id="dataTopo" class="sub-header"></p>
 
     <div id="resumoAtivas" class="total-panel">
-        <span>Total Aberto</span>
+        <span id="labelUser">Total (Gabriel)</span>
         <h2 id="somaTotal">R$ 0,00</h2>
     </div>
 
@@ -95,16 +89,16 @@
         <div class="grid-inputs">
             <input type="text" id="name" placeholder="Nome da Conta">
             <input type="number" id="value" placeholder="Valor (R$)" inputmode="decimal">
-            <input type="number" id="totalParc" placeholder="Total Parcelas (Opcional)">
+            <input type="number" id="totalParc" placeholder="Parcelas (Opcional)">
             <div class="color-picker-wrapper">
-                <span>Cor do Contrato:</span>
+                <span>Cor:</span>
                 <div class="color-picker-box">
                     <div id="colorPreview" class="color-preview" style="background-color: #00a859;"></div>
                     <input type="color" id="accColor" value="#00a859" oninput="updateColorPreview(this.value)">
                 </div>
             </div>
         </div>
-        <button class="btn-main" onclick="addAccount()">Gerar Novo Contrato</button>
+        <button class="btn-main" onclick="addAccount()">Salvar no meu Perfil</button>
     </div>
 
     <div class="tabs">
@@ -118,11 +112,26 @@
 
 <script>
     const APP_URL = "https://script.google.com/macros/s/AKfycbwrLdZ9Am4ivKnyUpI1P4JAMLuCKqCJ_duEf76H2fIuMZvhslsdYGEdnBZjulI2ZUoe/exec";
+    
+    let currentUser = localStorage.getItem('deck_user') || 'Gabriel';
     let db = { active: [], history: [] };
     const hj = new Date().toLocaleDateString('pt-BR');
     document.getElementById('dataTopo').innerText = "DATA: " + hj;
 
-    // --- FUNÇÕES DE MODAL CUSTOMIZADO ---
+    function setUser(user) {
+        currentUser = user;
+        localStorage.setItem('deck_user', user);
+        
+        document.getElementById('btnGabriel').classList.toggle('active', user === 'Gabriel');
+        document.getElementById('btnWelia').classList.toggle('active', user === 'Welia');
+        document.getElementById('labelUser').innerText = `Total (${user})`;
+        
+        document.getElementById('loader').classList.remove('hidden');
+        loadData();
+    }
+
+    function updateColorPreview(color) { document.getElementById('colorPreview').style.backgroundColor = color; }
+    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
     function openModal(title, text, confirmLabel, onConfirm, showCancel = true) {
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalText').innerText = text;
@@ -131,33 +140,27 @@
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('btnConfirm').onclick = () => { onConfirm(); closeModal(); };
     }
-    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
-    function updateColorPreview(color) { document.getElementById('colorPreview').style.backgroundColor = color; }
 
-    // --- LOGICA DE DADOS ---
     async function loadData() {
         try {
-            const response = await fetch(APP_URL, { method: 'POST', body: JSON.stringify({ action: "get" }) });
+            const response = await fetch(APP_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "get", user: currentUser }) 
+            });
             db = await response.json();
             document.getElementById('loader').classList.add('hidden');
             render();
-        } catch (e) { openModal("Erro", "Falha na conexão com a nuvem.", "OK", closeModal, false); }
+        } catch (e) { console.error(e); }
     }
 
     async function save() {
         render();
         try {
-            await fetch(APP_URL, { method: 'POST', body: JSON.stringify({ action: "save", db: db }) });
-            localStorage.setItem('ledger_db_pro', JSON.stringify(db));
-        } catch (e) { console.error("Erro ao salvar", e); }
-    }
-
-    function switchTab(type) {
-        document.getElementById('tabActive').classList.toggle('active', type === 'active');
-        document.getElementById('tabHistory').classList.toggle('active', type === 'history');
-        document.getElementById('activeList').classList.toggle('hidden', type !== 'active');
-        document.getElementById('historyList').classList.toggle('hidden', type !== 'history');
-        document.getElementById('resumoAtivas').style.display = (type === 'active') ? 'block' : 'none';
+            await fetch(APP_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "save", user: currentUser, db: db }) 
+            });
+        } catch (e) { console.error(e); }
     }
 
     function addAccount() {
@@ -176,30 +179,27 @@
                 total: isFixed ? 'FIXO' : parseInt(total),
                 color: color
             });
-            document.querySelectorAll('input[type="text"], input[type="number"]').forEach(i => i.value = '');
-            updateColorPreview('#00a859');
+            document.querySelectorAll('input[id="name"], input[id="value"], input[id="totalParc"]').forEach(i => i.value = '');
             save();
-        } else { openModal("Atenção", "Preencha Nome e Valor!", "OK", closeModal, false); }
+        } else { openModal("Atenção", "Preencha os campos!", "OK", closeModal, false); }
     }
 
     function payInstallment(id) {
         const index = db.active.findIndex(a => a.id === id);
         const item = db.active[index];
 
-        openModal("Confirmar Pagamento", `Deseja registrar o pagamento de R$ ${item.value.toFixed(2)} para ${item.name}?`, "Confirmar", () => {
+        openModal("Confirmar", `Pagar R$ ${item.value.toFixed(2)} de ${item.name}?`, "Confirmar", () => {
             const infoText = item.total === 'FIXO' ? 'Mensal' : `Parc. ${item.total - item.remaining + 1}/${item.total}`;
             const agora = new Date();
-
             db.history.unshift({
                 historyId: Date.now() + Math.random(),
                 name: item.name,
                 value: item.value,
                 date: agora.toLocaleDateString('pt-BR'),
-                time: agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                time: agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
                 info: infoText,
                 color: item.color || '#00a859'
             });
-
             if (item.total !== 'FIXO') {
                 item.remaining--;
                 if (item.remaining === 0) db.active.splice(index, 1);
@@ -209,17 +209,17 @@
     }
 
     function deleteAccount(id) {
-        openModal("Deletar", "Apagar este contrato permanentemente?", "Sim, Deletar", () => {
+        openModal("Deletar", "Apagar permanentemente?", "Sim", () => {
             db.active = db.active.filter(a => a.id !== id);
             save();
         });
     }
 
-    function deleteHistory(historyId) {
-        openModal("Remover Registro", "Apagar este item do histórico?", "Remover", () => {
-            db.history = db.history.filter(h => h.historyId !== historyId);
-            save();
-        });
+    function switchTab(type) {
+        document.getElementById('tabActive').classList.toggle('active', type === 'active');
+        document.getElementById('tabHistory').classList.toggle('active', type === 'history');
+        document.getElementById('activeList').classList.toggle('hidden', type !== 'active');
+        document.getElementById('historyList').classList.toggle('hidden', type !== 'history');
     }
 
     function render() {
@@ -231,15 +231,14 @@
         db.active.forEach(acc => {
             totalSoma += acc.value;
             const accColor = acc.color || '#00a859';
-            const badgeText = acc.total === 'FIXO' ? 'Fixa' : `${acc.remaining} rest.`;
             activeContainer.innerHTML += `
                 <div class="card" style="border-left-color: ${accColor};">
                     <div class="card-header">
                         <div>
-                            <div class="card-title" style="color: ${accColor};">${acc.name}</div>
-                            <div class="card-details">R$ ${acc.value.toFixed(2)}</div>
+                            <div class="card-title" style="color: ${accColor}">${acc.name}</div>
+                            <div style="font-weight:700">R$ ${acc.value.toFixed(2)}</div>
                         </div>
-                        <div class="installment-badge" style="color: ${accColor}; border-color: ${accColor}40;">${badgeText}</div>
+                        <div class="installment-badge">${acc.total === 'FIXO' ? 'Fixa' : acc.remaining + ' rest.'}</div>
                     </div>
                     <div class="card-actions">
                         <button class="btn-pay" onclick="payInstallment(${acc.id})">PAGAR</button>
@@ -249,7 +248,6 @@
         });
         document.getElementById('somaTotal').innerText = `R$ ${totalSoma.toFixed(2)}`;
 
-        // RENDER HISTÓRICO ORGANIZADO POR DATA
         historyContainer.innerHTML = '';
         let lastDate = "";
         db.history.forEach(h => {
@@ -257,23 +255,19 @@
                 historyContainer.innerHTML += `<div class="history-date-group">${h.date === hj ? "Hoje" : h.date}</div>`;
                 lastDate = h.date;
             }
-            const hColor = h.color || '#00a859';
             historyContainer.innerHTML += `
-                <div class="history-item" style="border-left-color: ${hColor}">
-                    <div class="history-info">
-                        <span class="tag" style="color: ${hColor};">${h.info}</span>
-                        <span class="name">${h.name}</span>
-                        <div class="history-time">${h.time || ''}</div>
+                <div class="history-item" style="border-left-color: ${h.color}">
+                    <div>
+                        <small style="color:${h.color}; font-weight:700">${h.info}</small>
+                        <div style="font-weight:500">${h.name}</div>
+                        <small style="color:#999">${h.time || ''}</small>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div class="history-value">R$ ${h.value.toFixed(2)}</div>
-                        <button style="border:none; background:none; font-size:1.2rem; cursor:pointer;" onclick="deleteHistory(${h.historyId})">🗑️</button>
-                    </div>
+                    <div style="font-weight:700">R$ ${h.value.toFixed(2)}</div>
                 </div>`;
         });
     }
 
-    loadData();
+    setUser(currentUser);
 </script>
 </body>
 </html>

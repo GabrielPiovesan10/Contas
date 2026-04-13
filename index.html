@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CONTAS - DECK</title>
+    <title>CONTAS</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,7 +11,6 @@
         body { background-color: var(--bg-color); color: var(--text); font-family: 'Poppins', sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; max-width: 100vw; overflow-x: hidden; }
         .container { width: 100%; max-width: 600px; }
         
-        /* Seletor de Perfil no Topo */
         .profile-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; background: #eee; padding: 5px; border-radius: 50px; width: fit-content; margin-left: auto; margin-right: auto; }
         .prof-btn { padding: 8px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.3s; color: #777; }
         .prof-btn.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,168,89,0.3); }
@@ -45,7 +44,7 @@
         .btn-del { background: none; color: var(--danger); border: 1px solid var(--danger); width: 60px; border-radius: 8px; font-weight: bold; }
         
         .history-date-group { margin: 20px 0 10px; font-size: 0.9rem; font-weight: 700; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #eee; }
-        .history-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; border-left: 4px solid #ddd; }
+        .history-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ddd; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
         .modal-box { background: #fff; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; }
@@ -77,7 +76,7 @@
         <button id="btnWelia" class="prof-btn" onclick="setUser('Welia')">WELIA</button>
     </div>
 
-    <h1>CONTAS - DECK</h1>
+    <h1>CONTAS</h1>
     <p id="dataTopo" class="sub-header"></p>
 
     <div id="resumoAtivas" class="total-panel">
@@ -111,7 +110,7 @@
 </div>
 
 <script>
-    const APP_URL = "https://script.google.com/macros/s/AKfycbz-_OplEUrbfEU23uo8IQV-y3jz203blv_0k335iA1FPy2cyP4sFgVglMP3Q1hT4LES/exec";
+    const APP_URL = "https://script.google.com/macros/s/AKfycbwrLdZ9Am4ivKnyUpI1P4JAMLuCKqCJ_duEf76H2fIuMZvhslsdYGEdnBZjulI2ZUoe/exec";
     
     let currentUser = localStorage.getItem('deck_user') || 'Gabriel';
     let db = { active: [], history: [] };
@@ -121,11 +120,9 @@
     function setUser(user) {
         currentUser = user;
         localStorage.setItem('deck_user', user);
-        
         document.getElementById('btnGabriel').classList.toggle('active', user === 'Gabriel');
         document.getElementById('btnWelia').classList.toggle('active', user === 'Welia');
         document.getElementById('labelUser').innerText = `Total (${user})`;
-        
         document.getElementById('loader').classList.remove('hidden');
         loadData();
     }
@@ -215,11 +212,19 @@
         });
     }
 
+    function deleteHistory(historyId) {
+        openModal("Remover Registro", "Apagar este item do histórico?", "Sim, Remover", () => {
+            db.history = db.history.filter(h => h.historyId !== historyId);
+            save();
+        });
+    }
+
     function switchTab(type) {
         document.getElementById('tabActive').classList.toggle('active', type === 'active');
         document.getElementById('tabHistory').classList.toggle('active', type === 'history');
         document.getElementById('activeList').classList.toggle('hidden', type !== 'active');
         document.getElementById('historyList').classList.toggle('hidden', type !== 'history');
+        document.getElementById('resumoAtivas').style.display = (type === 'active') ? 'block' : 'none';
     }
 
     function render() {
@@ -257,12 +262,15 @@
             }
             historyContainer.innerHTML += `
                 <div class="history-item" style="border-left-color: ${h.color}">
-                    <div>
+                    <div style="flex: 1;">
                         <small style="color:${h.color}; font-weight:700">${h.info}</small>
                         <div style="font-weight:500">${h.name}</div>
                         <small style="color:#999">${h.time || ''}</small>
                     </div>
-                    <div style="font-weight:700">R$ ${h.value.toFixed(2)}</div>
+                    <div style="text-align: right; display: flex; align-items: center; gap: 12px;">
+                        <div style="font-weight:700">R$ ${h.value.toFixed(2)}</div>
+                        <button style="border:none; background:none; font-size:1.2rem; cursor:pointer;" onclick="deleteHistory(${h.historyId})">🗑️</button>
+                    </div>
                 </div>`;
         });
     }

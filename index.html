@@ -9,7 +9,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         :root { --bg-color: #ffffff; --card-bg: #f9f9fb; --accent: #00a859; --text: #1a1a1a; --danger: #dc3545; --gray: #666; --input-border: #ccc; }
         
-        /* Ajuste para não bugar o scroll no iPhone */
         html, body { height: 100%; overflow-x: hidden; scroll-behavior: smooth; }
         body { background-color: var(--bg-color); color: var(--text); font-family: 'Poppins', sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
@@ -25,7 +24,6 @@
         h1 { color: var(--accent); text-align: center; font-size: 1.5rem; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
         .sub-header { text-align: center; color: #888; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
         
-        /* Ajuste no Painel Total para não dar o tranco */
         .total-panel { background: #000; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; transition: all 0.3s ease; overflow: hidden; max-height: 100px; }
         .total-panel.collapsed { max-height: 0; margin-bottom: 0; padding: 0; opacity: 0; border: none; }
         .total-panel h2 { font-size: 1.8rem; color: var(--accent); }
@@ -38,7 +36,8 @@
         .color-preview { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #eee; position: relative; }
         input[type="color"] { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
 
-        button.btn-main { background: var(--accent); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: 700; text-transform: uppercase; width: 100%; font-size: 1.1rem; cursor: pointer; }
+        button.btn-main { background: var(--accent); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: 700; text-transform: uppercase; width: 100%; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+        button.btn-cancel-edit { background: #666; margin-top: 10px; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab { flex: 1; text-align: center; padding: 15px; background: #eee; color: #555; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.2s; }
@@ -49,9 +48,11 @@
         
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .card-title { font-weight: 700; font-size: 1.1rem; }
-        .card-actions { display: flex; gap: 10px; margin-top: 15px; }
+        
+        .card-actions { display: flex; gap: 8px; margin-top: 15px; }
         .btn-pay { background: #fff; border: 1px solid var(--input-border); padding: 12px; border-radius: 8px; font-weight: 600; flex: 1; cursor: pointer; }
-        .btn-del { background: none; color: var(--danger); border: 1px solid var(--danger); width: 60px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-edit { background: none; color: #007bff; border: 1px solid #007bff; width: 45px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; }
+        .btn-del { background: none; color: var(--danger); border: 1px solid var(--danger); width: 45px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; }
         
         .history-date-group { margin: 20px 0 10px; font-size: 0.9rem; font-weight: 700; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #eee; }
         .history-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ddd; }
@@ -112,7 +113,8 @@
                 </div>
             </div>
         </div>
-        <button class="btn-main" onclick="addAccount()">Gerar Novo Contrato</button>
+        <button id="btnMainAdd" class="btn-main" onclick="handleMainAction()">Gerar Novo Contrato</button>
+        <button id="btnMainCancel" class="btn-main btn-cancel-edit hidden" onclick="cancelEdit()">Cancelar Edição</button>
     </div>
 
     <div class="tabs">
@@ -130,8 +132,9 @@
     let currentUser = localStorage.getItem('deck_user') || 'Gabriel';
     let db = { active: [], history: [] };
     const hj = new Date().toLocaleDateString('pt-BR');
+    let editingId = null; // Variável para controlar se estamos editando
+    
     document.getElementById('dataTopo').innerText = "DATA: " + hj;
-
     document.getElementById('userPin').value = localStorage.getItem('deck_pin_' + currentUser) || "";
 
     function setUser(user) {
@@ -141,6 +144,7 @@
         document.getElementById('btnGabriel').classList.toggle('active', user === 'Gabriel');
         document.getElementById('btnWelia').classList.toggle('active', user === 'Welia');
         document.getElementById('labelUser').innerText = `Total (${user})`;
+        cancelEdit(); // Cancela qualquer edição em andamento ao trocar de usuário
         loadData();
     }
 
@@ -200,6 +204,15 @@
         } catch (e) { console.error(e); }
     }
 
+    // Gerencia clique no botão principal
+    function handleMainAction() {
+        if (editingId) {
+            saveEdit();
+        } else {
+            addAccount();
+        }
+    }
+
     function addAccount() {
         const name = document.getElementById('name').value;
         const value = document.getElementById('value').value;
@@ -207,19 +220,91 @@
         const color = document.getElementById('accColor').value;
 
         if (name && value) {
+            // .replace aceita caso o usuário digite com vírgula no celular
+            const parsedValue = parseFloat(value.toString().replace(',', '.')); 
             db.active.push({
                 id: Date.now(),
                 name,
-                value: parseFloat(value),
+                value: parsedValue,
                 remaining: (!total || total <= 0) ? 'FIXO' : parseInt(total),
                 total: (!total || total <= 0) ? 'FIXO' : parseInt(total),
-                color: color
+                color: color,
+                lastPaidDate: "" // Inicia sem data de pagamento
             });
             document.getElementById('name').value = '';
             document.getElementById('value').value = '';
             document.getElementById('totalParc').value = '';
             save();
         } else { openModal("Atenção", "Preencha Nome e Valor!", "OK", closeModal, false); }
+    }
+
+    // Função nova para jogar os dados da conta nos inputs
+    function editAccount(id) {
+        const item = db.active.find(a => a.id === id);
+        if (!item) return;
+        
+        document.getElementById('name').value = item.name;
+        document.getElementById('value').value = item.value;
+        document.getElementById('totalParc').value = item.total === 'FIXO' ? '' : item.total;
+        document.getElementById('accColor').value = item.color || '#00a859';
+        updateColorPreview(item.color || '#00a859');
+        
+        editingId = id;
+        document.getElementById('btnMainAdd').innerText = "Salvar Alterações";
+        document.getElementById('btnMainAdd').style.background = "#007bff";
+        document.getElementById('btnMainCancel').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Sobe a tela para facilitar
+    }
+
+    // Função nova para salvar as edições
+    function saveEdit() {
+        const name = document.getElementById('name').value;
+        const value = document.getElementById('value').value;
+        const total = document.getElementById('totalParc').value;
+        const color = document.getElementById('accColor').value;
+
+        if (name && value) {
+            const item = db.active.find(a => a.id === editingId);
+            if (item) {
+                item.name = name;
+                item.value = parseFloat(value.toString().replace(',', '.'));
+                
+                // Lógica para recalcular parcelas caso mude
+                if (!total || total <= 0) {
+                    item.total = 'FIXO';
+                    item.remaining = 'FIXO';
+                } else {
+                    if (item.total === 'FIXO') {
+                        item.total = parseInt(total);
+                        item.remaining = parseInt(total);
+                    } else {
+                        let diff = parseInt(total) - item.total;
+                        item.total = parseInt(total);
+                        item.remaining = item.remaining + diff;
+                        if (item.remaining < 0) item.remaining = 0;
+                    }
+                }
+                item.color = color;
+            }
+            cancelEdit();
+            save();
+        } else { 
+            openModal("Atenção", "Preencha Nome e Valor!", "OK", closeModal, false); 
+        }
+    }
+
+    // Função nova para cancelar a edição e resetar os inputs
+    function cancelEdit() {
+        editingId = null;
+        document.getElementById('name').value = '';
+        document.getElementById('value').value = '';
+        document.getElementById('totalParc').value = '';
+        document.getElementById('accColor').value = '#00a859';
+        updateColorPreview('#00a859');
+        
+        document.getElementById('btnMainAdd').innerText = "Gerar Novo Contrato";
+        document.getElementById('btnMainAdd').style.background = "var(--accent)";
+        document.getElementById('btnMainCancel').classList.add('hidden');
     }
 
     function payInstallment(id) {
@@ -238,9 +323,13 @@
                 info: infoText,
                 color: item.color || '#00a859'
             });
+            
             if (item.total !== 'FIXO') {
                 item.remaining--;
                 if (item.remaining === 0) db.active.splice(index, 1);
+            } else {
+                // MODIFICAÇÃO AQUI: Registra que a conta fixa foi paga hoje
+                item.lastPaidDate = hj;
             }
             save();
         });
@@ -249,6 +338,7 @@
     function deleteAccount(id) {
         openModal("Deletar", "Apagar permanentemente?", "Sim", () => {
             db.active = db.active.filter(a => a.id !== id);
+            if (editingId === id) cancelEdit();
             save();
         });
     }
@@ -261,7 +351,6 @@
     }
 
     function switchTab(type) {
-        // Evita que a página role para o topo de forma brusca
         const scrollPos = window.scrollY;
         
         document.getElementById('tabActive').classList.toggle('active', type === 'active');
@@ -269,7 +358,6 @@
         document.getElementById('activeList').classList.toggle('hidden', type !== 'active');
         document.getElementById('historyList').classList.toggle('hidden', type !== 'history');
         
-        // Em vez de display: none, usamos uma classe que retrai o painel suavemente
         const resumo = document.getElementById('resumoAtivas');
         if (type === 'active') {
             resumo.classList.remove('collapsed');
@@ -277,7 +365,6 @@
             resumo.classList.add('collapsed');
         }
         
-        // Mantém a posição do scroll para não dar o tranco
         window.scrollTo(0, scrollPos);
     }
 
@@ -288,6 +375,11 @@
 
         activeContainer.innerHTML = '';
         db.active.forEach(acc => {
+            // MODIFICAÇÃO AQUI: Esconde a conta se for fixa e foi paga hoje
+            if (acc.total === 'FIXO' && acc.lastPaidDate === hj) {
+                return; // Pula este item para que ele não apareça nem conte na soma hoje
+            }
+
             totalSoma += acc.value;
             const accColor = acc.color || '#00a859';
             activeContainer.innerHTML += `
@@ -301,7 +393,8 @@
                     </div>
                     <div class="card-actions">
                         <button class="btn-pay" onclick="payInstallment(${acc.id})">PAGAR</button>
-                        <button class="btn-del" onclick="deleteAccount(${acc.id})">X</button>
+                        <button class="btn-edit" onclick="editAccount(${acc.id})" title="Editar">✏️</button>
+                        <button class="btn-del" onclick="deleteAccount(${acc.id})" title="Apagar">X</button>
                     </div>
                 </div>`;
         });
